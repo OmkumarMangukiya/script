@@ -163,7 +163,7 @@ Example for a workflow named "Chat with PostgreSQL Database":
             if line.lower().startswith(("prompt")):
                 colon_pos = line.find(":")
                 if colon_pos != -1:
-                    line = line[colon_pos + 1:].strip()
+                    line = line[colon_pos + 1:].trip()
             # Skip quote marks
             if line.startswith('"') and line.endswith('"'):
                 line = line[1:-1].strip()
@@ -206,8 +206,8 @@ Example for a workflow named "Chat with PostgreSQL Database":
         # Load workflows
         workflows = self.load_workflows(input_file)
         
-        # Open output file for writing
-        with open(output_file, 'w') as f:
+        # Open output file for appending
+        with open(output_file, 'a') as f:
             # Process each workflow
             for i, workflow in enumerate(workflows):
                 print(f"Processing workflow {i+1}/{len(workflows)}: {workflow.get('name', 'Unnamed')}")
