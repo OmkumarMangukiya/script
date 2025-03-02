@@ -1,276 +1,429 @@
 [{
+  "id": "177",
   "meta": {
-    "instanceId": "408f9fb9940c3cb18ffdef0e0150fe342d6e655c3a9fac21f0f644e8bedabcd9"
+    "instanceId": "dfdeafd1c3ed2ee08eeab8c2fa0c3f522066931ed8138ccd35dc20a1e69decd3"
   },
-  "name":"Scrape and summarize webpages with AI",
-  "description":"This workflow integrates both web scraping and NLP functionalities. It uses HTML parsing to extract links, HTTP requests to fetch essay content, and AI-based summarization using GPT-4o. It's an excellent example of an end-to-end automated task that is not only efficient but also provides real value by summarizing valuable content.",
+  "name": "Telegram AI-bot",
+  "description":"The workflow starts by listening for messages from Telegram users. The message is then processed, and based on its content, different actions are taken. If it's a regular chat message, the workflow generates a response using the OpenAI API and sends it back to the user. If it's a command to create an image, the workflow generates an image using the OpenAI API and sends the image to the user. If the command is unsupported, an error message is sent. Throughout the workflow, there are additional nodes for displaying notes and simulating typing actions.",
+  "tags": [
+    {
+      "id": "15",
+      "name": "tutorial",
+      "createdAt": "2022-10-04T20:07:25.607Z",
+      "updatedAt": "2022-10-04T20:07:25.607Z"
+    }
+  ],
   "nodes": [
     {
-      "id": "67850bd7-f9f4-4d5b-8c9e-bd1451247ba6",
-      "name": "When clicking \"Execute Workflow\"",
-      "type": "n8n-nodes-base.manualTrigger",
+      "id": "ea71a467-a646-4aca-b72e-cef1249c74e2",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
       "position": [
-        -740,
-        1000
+        20,
+        340
       ],
-      "parameters": {},
-      "typeVersion": 1
-    },
-    {
-      "id": "0d9133f9-b6d3-4101-95c6-3cd24cdb70c3",
-      "name": "Fetch essay list",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [
-        -520,
-        1000
-      ],
+      "webhookId": "51942fbb-ca0e-4ec4-9423-5fcc7d3c4281",
       "parameters": {
-        "url": "http://www.paulgraham.com/articles.html",
-        "options": {}
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
       },
-      "typeVersion": 4.1
-    },
-    {
-      "id": "ee634297-a456-4f70-a995-55b02950571e",
-      "name": "Extract essay names",
-      "type": "n8n-nodes-base.html",
-      "position": [
-        -300,
-        1000
-      ],
-      "parameters": {
-        "options": {},
-        "operation": "extractHtmlContent",
-        "dataPropertyName": "=data",
-        "extractionValues": {
-          "values": [
-            {
-              "key": "essay",
-              "attribute": "href",
-              "cssSelector": "table table a",
-              "returnArray": true,
-              "returnValue": "attribute"
-            }
-          ]
+      "credentials": {
+        "telegramApi": {
+          "id": "70",
+          "name": "Telegram bot"
         }
       },
       "typeVersion": 1
     },
     {
-      "id": "83d75693-dbb8-44c4-8533-da06f611c59c",
-      "name": "Fetch essay texts",
-      "type": "n8n-nodes-base.httpRequest",
+      "id": "1cbe43d4-ea8b-4178-bc10-4bfad7abe143",
+      "name": "CheckCommand",
+      "type": "n8n-nodes-base.switch",
       "position": [
-        360,
-        1000
+        980,
+        360
       ],
       "parameters": {
-        "url": "=http://www.paulgraham.com/{{ $json.essay }}",
-        "options": {}
-      },
-      "typeVersion": 4.1
-    },
-    {
-      "id": "151022b5-8570-4176-bf3f-137f27ac7036",
-      "name": "Extract title",
-      "type": "n8n-nodes-base.html",
-      "position": [
-        700,
-        700
-      ],
-      "parameters": {
-        "options": {},
-        "operation": "extractHtmlContent",
-        "extractionValues": {
-          "values": [
+        "rules": {
+          "rules": [
             {
-              "key": "title",
-              "cssSelector": "title"
-            }
-          ]
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "07bcf095-3c4d-4a72-9bcb-341411750ff5",
-      "name": "Clean up",
-      "type": "n8n-nodes-base.set",
-      "position": [
-        1360,
-        980
-      ],
-      "parameters": {
-        "fields": {
-          "values": [
-            {
-              "name": "title",
-              "stringValue": "={{ $json.title }}"
+              "value2": "/",
+              "operation": "notStartsWith"
             },
             {
-              "name": "summary",
-              "stringValue": "={{ $json.response.text }}"
+              "output": 1,
+              "value2": "/start",
+              "operation": "startsWith"
             },
             {
-              "name": "url",
-              "stringValue": "=http://www.paulgraham.com/{{ $('Limit to first 3').item.json.essay }}"
+              "output": 2,
+              "value2": "=/image ",
+              "operation": "startsWith"
             }
           ]
         },
-        "include": "none",
-        "options": {}
+        "value1": "={{ $json.message?.text }}",
+        "dataType": "string",
+        "fallbackOutput": 3
       },
-      "typeVersion": 3
+      "typeVersion": 1
     },
     {
-      "id": "11285de0-3c5d-4296-a322-9b7585af9acc",
+      "id": "074e907f-634b-4242-b669-33fa064f8472",
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -580,
-        920
+        1600,
+        581.661764705882
       ],
       "parameters": {
-        "width": 1071.752021563343,
-        "height": 285.66037735849045,
-        "content": "## Scrape latest Paul Graham essays"
+        "width": 316.1071428571428,
+        "height": 231.22373949579838,
+        "content": "## Error fallback for unsupported commands"
       },
       "typeVersion": 1
     },
     {
-      "id": "c32f905d-dd7a-4b68-bbe0-dd8115ee0944",
+      "id": "2aa961b8-f0af-4d5c-a6af-1be56ea4b2e6",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        380,
+        340
+      ],
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "model_temperature",
+              "value": 0.8
+            },
+            {
+              "name": "token_length",
+              "value": 500
+            }
+          ],
+          "string": [
+            {
+              "name": "system_command",
+              "value": "=You are a friendly chatbot. User name is {{ $json?.message?.from?.first_name }}. User system language is {{ $json?.message?.from?.language_code }}. First, detect user text language. Next, provide your reply in the same language. Include several suitable emojis in your answer."
+            },
+            {
+              "name": "bot_typing",
+              "value": "={{ $json?.message?.text.startsWith('/image') ? \"upload_photo\" : \"typing\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "2d2fe268-1e3e-483b-847c-4412e586c1ca",
       "name": "Sticky Note1",
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        620,
-        920
+        1240,
+        -240
       ],
       "parameters": {
-        "width": 465.3908355795153,
-        "height": 606.7924528301882,
-        "content": "## Summarize them with GPT"
+        "width": 330.5019024637719,
+        "height": 233,
+        "content": "## Chatbot mode by default\n### (when no command is provided)"
       },
       "typeVersion": 1
     },
     {
-      "id": "29d264f4-df6d-4a41-ab38-58e1b1becc9a",
-      "name": "Split out into items",
-      "type": "n8n-nodes-base.splitOut",
+      "id": "09a9c0b4-ac6e-46eb-b2e0-ef2b55e94ada",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -80,
-        1000
+        1240,
+        20
       ],
       "parameters": {
-        "options": {},
-        "fieldToSplitOut": "essay"
+        "width": 330.7863484403046,
+        "height": 219.892857142857,
+        "content": "## Welcome message\n### /start"
       },
       "typeVersion": 1
     },
     {
-      "id": "ccfa3a1d-f170-44b4-a1f2-3573c88cae98",
-      "name": "Limit to first 3",
-      "type": "n8n-nodes-base.limit",
+      "id": "088cffee-5720-488b-a4ec-cfdccbf77e75",
+      "name": "Chat_mode",
+      "type": "n8n-nodes-base.openAi",
       "position": [
-        140,
-        1000
+        1340,
+        -160
       ],
       "parameters": {
-        "maxItems": 3
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "c3d05068-9d1a-4ef5-8249-e7384dc617ee",
-      "name": "Default Data Loader",
-      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
-      "position": [
-        820,
-        1200
-      ],
-      "parameters": {
-        "options": {}
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "db75adad-cb16-4e72-b16e-34684a733b05",
-      "name": "Recursive Character Text Splitter",
-      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
-      "position": [
-        820,
-        1340
-      ],
-      "parameters": {
-        "options": {}
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "022cc091-9b4c-45c2-bc8e-4037ec2d0d60",
-      "name": "OpenAI Chat Model1",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "position": [
-        680,
-        1200
-      ],
-      "parameters": {
-        "model": "gpt-4o-mini",
-        "options": {}
+        "model": "gpt-4",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "={{ $json.system_command }}"
+            },
+            {
+              "content": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": "={{ $json.token_length }}",
+          "temperature": "={{ $json.model_temperature }}"
+        },
+        "resource": "chat"
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "63",
           "name": "OpenAi account"
         }
       },
       "typeVersion": 1
     },
     {
-      "id": "cda47bb7-36c5-4d15-a1ef-0c66b1194825",
+      "id": "41248697-6474-4a8f-a8b8-038c96465948",
+      "name": "Greeting",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        1340,
+        80
+      ],
+      "parameters": {
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "={{ $json.system_command }}"
+            },
+            {
+              "content": "=This is the first message from a user. Please welcome a new user in `{{ $json.message.from.language_code }}` language"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": "={{ $json.token_length }}",
+          "temperature": "={{ $json.model_temperature }}"
+        },
+        "resource": "chat"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "63",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "20c2e7fa-5d65-441b-8d1d-a8d46c624964",
+      "name": "Text reply",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1700,
+        -40
+      ],
+      "parameters": {
+        "text": "={{ $json.message.content }}",
+        "chatId": "={{ $('Settings').first().json.message.from.id }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "70",
+          "name": "Telegram bot"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "30321276-ebe1-41ac-b420-9dab8daa405b",
+      "name": "Send Typing action",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        580,
+        480
+      ],
+      "parameters": {
+        "action": "={{ $json.bot_typing }}",
+        "chatId": "={{ $json.message.from.id }}",
+        "operation": "sendChatAction"
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "70",
+          "name": "Telegram bot"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "7d7ff2e8-b0ca-4638-a056-f7b4e2e6273d",
       "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "position": [
-        1160,
-        980
+        800,
+        360
       ],
       "parameters": {
-        "mode": "combine",
-        "options": {},
-        "combineBy": "combineByPosition"
+        "mode": "chooseBranch"
       },
-      "typeVersion": 3
+      "typeVersion": 2.1
     },
     {
-      "id": "28144e4c-e425-428d-b3d1-f563bfd4e5b3",
-      "name": "Summarization Chain",
-      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "id": "656bab5e-b7f7-47a1-8e75-4a17d2070290",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
       "position": [
-        720,
-        1000
+        1240,
+        280
       ],
       "parameters": {
-        "options": {},
-        "operationMode": "documentLoader"
+        "width": 329.7428571428562,
+        "height": 233.8785714285713,
+        "content": "## Create an image\n### /image + request"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ca2111d2-463a-4ef0-9436-ee09598dbf07",
+      "name": "Create an image",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        1340,
+        360
+      ],
+      "parameters": {
+        "prompt": "={{ $json.message.text.split(' ').slice(1).join(' ') }}",
+        "options": {
+          "n": 1,
+          "size": "512x512"
+        },
+        "resource": "image",
+        "responseFormat": "imageUrl"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "63",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e91d616b-1d5e-40e8-8468-2d0b2dda4cf7",
+      "name": "Send error message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1700,
+        660
+      ],
+      "parameters": {
+        "text": "=Sorry, {{ $json.message.from.first_name }}! This command is not supported yet. Please type some text to a chat bot or try this command:\n/image \\[your prompt]\n\nEnter the command, then space and provide your request. Example:\n\n`/image a picture or a cute little kitten with big eyes. Miyazaki studio ghibli style`",
+        "chatId": "={{ $json.message.from.id }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "70",
+          "name": "Telegram bot"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "125e27d2-b03b-4f02-9dd1-8fc81ecf0b6b",
+      "name": "Send image",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1700,
+        360
+      ],
+      "parameters": {
+        "file": "={{ $json.url }}",
+        "chatId": "={{ $('Settings').first().json.message.from.id }}",
+        "operation": "sendPhoto",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "70",
+          "name": "Telegram bot"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "730a51ac-223e-4956-be7f-166eadb6ed81",
+      "name": "PreProcessing",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        200,
+        340
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message.text",
+              "value": "={{ $json?.message?.text || \"\" }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
       },
       "typeVersion": 2
     }
   ],
+  "active": true,
   "pinData": {},
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "6ab99e3f-845d-42cc-847b-37cf19a72e93",
   "connections": {
     "Merge": {
       "main": [
         [
           {
-            "node": "Clean up",
+            "node": "CheckCommand",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract title": {
+    "Greeting": {
       "main": [
         [
+          {
+            "node": "Text reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Send Typing action",
+            "type": "main",
+            "index": 0
+          },
           {
             "node": "Merge",
             "type": "main",
@@ -279,78 +432,83 @@
         ]
       ]
     },
-    "Fetch essay list": {
+    "Chat_mode": {
       "main": [
         [
           {
-            "node": "Extract essay names",
+            "node": "Text reply",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Limit to first 3": {
+    "CheckCommand": {
       "main": [
         [
           {
-            "node": "Fetch essay texts",
+            "node": "Chat_mode",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create an image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send error message",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Fetch essay texts": {
+    "PreProcessing": {
       "main": [
         [
           {
-            "node": "Extract title",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Summarization Chain",
+            "node": "Settings",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenAI Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Summarization Chain",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Default Data Loader": {
-      "ai_document": [
-        [
-          {
-            "node": "Summarization Chain",
-            "type": "ai_document",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract essay names": {
+    "Create an image": {
       "main": [
         [
           {
-            "node": "Split out into items",
+            "node": "Send image",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Summarization Chain": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "PreProcessing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Typing action": {
       "main": [
         [
           {
@@ -360,40 +518,6 @@
           }
         ]
       ]
-    },
-    "Split out into items": {
-      "main": [
-        [
-          {
-            "node": "Limit to first 3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When clicking \"Execute Workflow\"": {
-      "main": [
-        [
-          {
-            "node": "Fetch essay list",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Recursive Character Text Splitter": {
-      "ai_textSplitter": [
-        [
-          {
-            "node": "Default Data Loader",
-            "type": "ai_textSplitter",
-            "index": 0
-          }
-        ]
-      ]
     }
   }
-}
-]
+}]
