@@ -1,523 +1,199 @@
-[{
-  "id": "177",
-  "meta": {
-    "instanceId": "dfdeafd1c3ed2ee08eeab8c2fa0c3f522066931ed8138ccd35dc20a1e69decd3"
-  },
-  "name": "Telegram AI-bot",
-  "description":"The workflow starts by listening for messages from Telegram users. The message is then processed, and based on its content, different actions are taken. If it's a regular chat message, the workflow generates a response using the OpenAI API and sends it back to the user. If it's a command to create an image, the workflow generates an image using the OpenAI API and sends the image to the user. If the command is unsupported, an error message is sent. Throughout the workflow, there are additional nodes for displaying notes and simulating typing actions.",
-  "tags": [
-    {
-      "id": "15",
-      "name": "tutorial",
-      "createdAt": "2022-10-04T20:07:25.607Z",
-      "updatedAt": "2022-10-04T20:07:25.607Z"
-    }
-  ],
-  "nodes": [
-    {
-      "id": "ea71a467-a646-4aca-b72e-cef1249c74e2",
-      "name": "Telegram Trigger",
-      "type": "n8n-nodes-base.telegramTrigger",
-      "position": [
-        20,
-        340
-      ],
-      "webhookId": "51942fbb-ca0e-4ec4-9423-5fcc7d3c4281",
-      "parameters": {
-        "updates": [
-          "*"
+[
+  {
+    "meta": {
+      "instanceId": "408f9fb9940c3cb18ffdef0e0150fe342d6e655c3a9fac21f0f644e8bedabcd9"
+    },
+    "name":"AI chatbot that can search the web",
+    "description":"This workflow is designed for dynamic and intelligent conversational capabilities. It incorporates OpenAI's GPT-4o model for natural language understanding and generation. Additional tools include SerpAPI and Wikipedia for enriched, data-driven responses. The workflow is triggered manually, and utilizes a 'Window Buffer Memory' to maintain the context of the last 20 interactions for better conversational continuity. All these components are orchestrated through n8n nodes, ensuring seamless interconnectivity.",
+    "nodes": [
+      {
+        "id": "3a3bcb2d-cb94-40d8-8b9e-322ea9d27f6e",
+        "name": "Sticky Note4",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1000,
+          640
         ],
-        "additionalFields": {}
-      },
-      "credentials": {
-        "telegramApi": {
-          "id": "70",
-          "name": "Telegram bot"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "1cbe43d4-ea8b-4178-bc10-4bfad7abe143",
-      "name": "CheckCommand",
-      "type": "n8n-nodes-base.switch",
-      "position": [
-        980,
-        360
-      ],
-      "parameters": {
-        "rules": {
-          "rules": [
-            {
-              "value2": "/",
-              "operation": "notStartsWith"
-            },
-            {
-              "output": 1,
-              "value2": "/start",
-              "operation": "startsWith"
-            },
-            {
-              "output": 2,
-              "value2": "=/image ",
-              "operation": "startsWith"
-            }
-          ]
+        "parameters": {
+          "width": 300,
+          "height": 185,
+          "content": "### The conversation history(last 20 messages) is stored in a buffer memory"
         },
-        "value1": "={{ $json.message?.text }}",
-        "dataType": "string",
-        "fallbackOutput": 3
+        "typeVersion": 1
       },
-      "typeVersion": 1
-    },
-    {
-      "id": "074e907f-634b-4242-b669-33fa064f8472",
-      "name": "Sticky Note",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1600,
-        581.661764705882
-      ],
-      "parameters": {
-        "width": 316.1071428571428,
-        "height": 231.22373949579838,
-        "content": "## Error fallback for unsupported commands"
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "2aa961b8-f0af-4d5c-a6af-1be56ea4b2e6",
-      "name": "Settings",
-      "type": "n8n-nodes-base.set",
-      "position": [
-        380,
-        340
-      ],
-      "parameters": {
-        "values": {
-          "number": [
-            {
-              "name": "model_temperature",
-              "value": 0.8
-            },
-            {
-              "name": "token_length",
-              "value": 500
-            }
-          ],
-          "string": [
-            {
-              "name": "system_command",
-              "value": "=You are a friendly chatbot. User name is {{ $json?.message?.from?.first_name }}. User system language is {{ $json?.message?.from?.language_code }}. First, detect user text language. Next, provide your reply in the same language. Include several suitable emojis in your answer."
-            },
-            {
-              "name": "bot_typing",
-              "value": "={{ $json?.message?.text.startsWith('/image') ? \"upload_photo\" : \"typing\" }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "typeVersion": 2
-    },
-    {
-      "id": "2d2fe268-1e3e-483b-847c-4412e586c1ca",
-      "name": "Sticky Note1",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1240,
-        -240
-      ],
-      "parameters": {
-        "width": 330.5019024637719,
-        "height": 233,
-        "content": "## Chatbot mode by default\n### (when no command is provided)"
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "09a9c0b4-ac6e-46eb-b2e0-ef2b55e94ada",
-      "name": "Sticky Note2",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1240,
-        20
-      ],
-      "parameters": {
-        "width": 330.7863484403046,
-        "height": 219.892857142857,
-        "content": "## Welcome message\n### /start"
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "088cffee-5720-488b-a4ec-cfdccbf77e75",
-      "name": "Chat_mode",
-      "type": "n8n-nodes-base.openAi",
-      "position": [
-        1340,
-        -160
-      ],
-      "parameters": {
-        "model": "gpt-4",
-        "prompt": {
-          "messages": [
-            {
-              "role": "system",
-              "content": "={{ $json.system_command }}"
-            },
-            {
-              "content": "={{ $json.message.text }}"
-            }
-          ]
-        },
-        "options": {
-          "maxTokens": "={{ $json.token_length }}",
-          "temperature": "={{ $json.model_temperature }}"
-        },
-        "resource": "chat"
-      },
-      "credentials": {
-        "openAiApi": {
-          "id": "63",
-          "name": "OpenAi account"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "41248697-6474-4a8f-a8b8-038c96465948",
-      "name": "Greeting",
-      "type": "n8n-nodes-base.openAi",
-      "position": [
-        1340,
-        80
-      ],
-      "parameters": {
-        "prompt": {
-          "messages": [
-            {
-              "role": "system",
-              "content": "={{ $json.system_command }}"
-            },
-            {
-              "content": "=This is the first message from a user. Please welcome a new user in `{{ $json.message.from.language_code }}` language"
-            }
-          ]
-        },
-        "options": {
-          "maxTokens": "={{ $json.token_length }}",
-          "temperature": "={{ $json.model_temperature }}"
-        },
-        "resource": "chat"
-      },
-      "credentials": {
-        "openAiApi": {
-          "id": "63",
-          "name": "OpenAi account"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "20c2e7fa-5d65-441b-8d1d-a8d46c624964",
-      "name": "Text reply",
-      "type": "n8n-nodes-base.telegram",
-      "position": [
-        1700,
-        -40
-      ],
-      "parameters": {
-        "text": "={{ $json.message.content }}",
-        "chatId": "={{ $('Settings').first().json.message.from.id }}",
-        "additionalFields": {
-          "parse_mode": "Markdown"
-        }
-      },
-      "credentials": {
-        "telegramApi": {
-          "id": "70",
-          "name": "Telegram bot"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "30321276-ebe1-41ac-b420-9dab8daa405b",
-      "name": "Send Typing action",
-      "type": "n8n-nodes-base.telegram",
-      "position": [
-        580,
-        480
-      ],
-      "parameters": {
-        "action": "={{ $json.bot_typing }}",
-        "chatId": "={{ $json.message.from.id }}",
-        "operation": "sendChatAction"
-      },
-      "credentials": {
-        "telegramApi": {
-          "id": "70",
-          "name": "Telegram bot"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "7d7ff2e8-b0ca-4638-a056-f7b4e2e6273d",
-      "name": "Merge",
-      "type": "n8n-nodes-base.merge",
-      "position": [
-        800,
-        360
-      ],
-      "parameters": {
-        "mode": "chooseBranch"
-      },
-      "typeVersion": 2.1
-    },
-    {
-      "id": "656bab5e-b7f7-47a1-8e75-4a17d2070290",
-      "name": "Sticky Note3",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1240,
-        280
-      ],
-      "parameters": {
-        "width": 329.7428571428562,
-        "height": 233.8785714285713,
-        "content": "## Create an image\n### /image + request"
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "ca2111d2-463a-4ef0-9436-ee09598dbf07",
-      "name": "Create an image",
-      "type": "n8n-nodes-base.openAi",
-      "position": [
-        1340,
-        360
-      ],
-      "parameters": {
-        "prompt": "={{ $json.message.text.split(' ').slice(1).join(' ') }}",
-        "options": {
-          "n": 1,
-          "size": "512x512"
-        },
-        "resource": "image",
-        "responseFormat": "imageUrl"
-      },
-      "credentials": {
-        "openAiApi": {
-          "id": "63",
-          "name": "OpenAi account"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "e91d616b-1d5e-40e8-8468-2d0b2dda4cf7",
-      "name": "Send error message",
-      "type": "n8n-nodes-base.telegram",
-      "position": [
-        1700,
-        660
-      ],
-      "parameters": {
-        "text": "=Sorry, {{ $json.message.from.first_name }}! This command is not supported yet. Please type some text to a chat bot or try this command:\n/image \\[your prompt]\n\nEnter the command, then space and provide your request. Example:\n\n`/image a picture or a cute little kitten with big eyes. Miyazaki studio ghibli style`",
-        "chatId": "={{ $json.message.from.id }}",
-        "additionalFields": {
-          "parse_mode": "Markdown"
-        }
-      },
-      "credentials": {
-        "telegramApi": {
-          "id": "70",
-          "name": "Telegram bot"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "125e27d2-b03b-4f02-9dd1-8fc81ecf0b6b",
-      "name": "Send image",
-      "type": "n8n-nodes-base.telegram",
-      "position": [
-        1700,
-        360
-      ],
-      "parameters": {
-        "file": "={{ $json.url }}",
-        "chatId": "={{ $('Settings').first().json.message.from.id }}",
-        "operation": "sendPhoto",
-        "additionalFields": {}
-      },
-      "credentials": {
-        "telegramApi": {
-          "id": "70",
-          "name": "Telegram bot"
-        }
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "730a51ac-223e-4956-be7f-166eadb6ed81",
-      "name": "PreProcessing",
-      "type": "n8n-nodes-base.set",
-      "position": [
-        200,
-        340
-      ],
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "message.text",
-              "value": "={{ $json?.message?.text || \"\" }}"
-            }
-          ]
-        },
-        "options": {
-          "dotNotation": true
-        }
-      },
-      "typeVersion": 2
-    }
-  ],
-  "active": true,
-  "pinData": {},
-  "settings": {
-    "callerPolicy": "workflowsFromSameOwner",
-    "saveManualExecutions": true,
-    "saveDataSuccessExecution": "all"
-  },
-  "versionId": "6ab99e3f-845d-42cc-847b-37cf19a72e93",
-  "connections": {
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "CheckCommand",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Greeting": {
-      "main": [
-        [
-          {
-            "node": "Text reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Settings": {
-      "main": [
-        [
-          {
-            "node": "Send Typing action",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Chat_mode": {
-      "main": [
-        [
-          {
-            "node": "Text reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "CheckCommand": {
-      "main": [
-        [
-          {
-            "node": "Chat_mode",
-            "type": "main",
-            "index": 0
-          }
+      {
+        "id": "e279af43-b003-4499-b221-58716e735379",
+        "name": "On new manual Chat Message",
+        "type": "@n8n/n8n-nodes-langchain.manualChatTrigger",
+        "position": [
+          740,
+          340
         ],
-        [
-          {
-            "node": "Greeting",
-            "type": "main",
-            "index": 0
-          }
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "f4f8bf03-a43e-4a1f-a592-cd0f8408f552",
+        "name": "Chat OpenAI",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "position": [
+          840,
+          653
         ],
-        [
-          {
-            "node": "Create an image",
-            "type": "main",
-            "index": 0
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "temperature": 0.3
           }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "8gccIjcuf3gvaoEr",
+            "name": "OpenAi account"
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "66b60f68-bae8-4958-ac81-03883f563ab3",
+        "name": "Wikipedia",
+        "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+        "position": [
+          1480,
+          693
         ],
-        [
-          {
-            "node": "Send error message",
-            "type": "main",
-            "index": 0
-          }
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "70f6b43b-9290-4fbc-992f-0895d4578c9f",
+        "name": "Sticky Note3",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1340,
+          633
+        ],
+        "parameters": {
+          "width": 300,
+          "height": 185,
+          "content": "### Tools which agent can use to accomplish the task"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "8696269f-6556-41f1-bbe4-5597e4e46e02",
+        "name": "Sticky Note6",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          960,
+          260
+        ],
+        "parameters": {
+          "width": 422,
+          "height": 211,
+          "content": "### Conversational agent will utilise available tools to answer the prompt. "
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "6814967b-4567-4cdd-bf09-6b1b5ed0c68e",
+        "name": "Window Buffer Memory",
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "position": [
+          1100,
+          700
+        ],
+        "parameters": {
+          "contextWindowLength": 20
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "ce4358ac-c2cc-45ba-b950-247f8360b36c",
+        "name": "SerpAPI",
+        "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+        "position": [
+          1380,
+          693
+        ],
+        "parameters": {
+          "options": {}
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "de80add8-c37d-4d46-80ec-b43234e21150",
+        "name": "AI Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          1040,
+          340
+        ],
+        "parameters": {
+          "text": "={{ $json.input }}",
+          "options": {},
+          "promptType": "define"
+        },
+        "typeVersion": 1.6
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "SerpAPI": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
         ]
-      ]
-    },
-    "PreProcessing": {
-      "main": [
-        [
-          {
-            "node": "Settings",
-            "type": "main",
-            "index": 0
-          }
+      },
+      "Wikipedia": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
         ]
-      ]
-    },
-    "Create an image": {
-      "main": [
-        [
-          {
-            "node": "Send image",
-            "type": "main",
-            "index": 0
-          }
+      },
+      "Chat OpenAI": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
         ]
-      ]
-    },
-    "Telegram Trigger": {
-      "main": [
-        [
-          {
-            "node": "PreProcessing",
-            "type": "main",
-            "index": 0
-          }
+      },
+      "Window Buffer Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
         ]
-      ]
-    },
-    "Send Typing action": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
+      },
+      "On new manual Chat Message": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
-      ]
+      }
     }
   }
-}]
+]
