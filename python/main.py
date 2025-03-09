@@ -27,7 +27,7 @@ class N8NWorkflowProcessor:
             "nodes": [{"id": node["id"], "name": node["name"], "type": node["type"]} for node in workflow.get("nodes", [])],
             "connections": workflow.get("connections", {})
         }
-        system_message = "You are an expert in N8N workflows. Generate exactly 5 diverse training prompts for the given workflow."
+        system_message = "You are an expert in N8N workflows. Generate exactly 4 diverse training prompts for the given workflow."
 
         user_message = f"""
 Workflow Name: {workflow_name}
@@ -35,9 +35,9 @@ Workflow Name: {workflow_name}
 Workflow JSON:
 {json.dumps(simplified_workflow, indent=2)}
 
-Generate exactly 5 different training prompts that would elicit this workflow as a response.
+Generate exactly 4 different training prompts that would elicit this workflow as a response.
 Return only a JSON array with the structure:
-["Prompt 1", "Prompt 2", "Prompt 3" , "Prompt 4", "Prompt 5"]
+["Prompt 1", "Prompt 2", "Prompt 3" , "Prompt 4"]
 Do not include any explanations or extra text.
         """
 
@@ -75,8 +75,8 @@ Do not include any explanations or extra text.
 
             try:
                 prompts = json.loads(content)
-                if not isinstance(prompts, list) or len(prompts) != 5:
-                    raise ValueError(f"OpenAI response is not a valid list of 5 prompts. Response: {content}")
+                if not isinstance(prompts, list) or len(prompts) != 4:
+                    raise ValueError(f"OpenAI response is not a valid list of 4 prompts. Response: {content}")
                 return prompts
             except json.JSONDecodeError:
                 raise ValueError(f"OpenAI returned invalid JSON. Response: {content}")
