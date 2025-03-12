@@ -1,0 +1,3 @@
+Prompt : Build a workflow for the Notion AI Assistant Generator that downloads a Notion database schema from a provided URL and creates a custom AI chat assistant with advanced querying, schema awareness, reference links, and self-validation features.
+Name : Notion AI Assistant Generator
+Description :  This n8n workflow template lets teams easily generate a custom AI chat assistant based on the schema of any Notion database. Simply provide the Notion database URL, and the workflow downloads the schema and creates a tailored AI assistant designed to interact with that specific database structure. Features : Instant Assistant Generation, Advanced Querying  ,Schema Awareness     , Reference Links , Self-Validation
