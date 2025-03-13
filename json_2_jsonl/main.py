@@ -3,12 +3,12 @@ import openai
 import os
 
 # Set your OpenAI API Key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_prompt(name, description):
-    """Uses OpenAI API to generate a natural-sounding prompt based on name and description."""
+    """Uses OpenAI API to generate a natural-sounding prompt based on name and description. Think like a user describing what they need—make it intuitive and natural"""
     system_message = "You generate user prompts for an AI that builds n8n workflows from natural language."
     
     user_message = (
@@ -16,6 +16,8 @@ def generate_prompt(name, description):
         f"Workflow Name: {name}\n"
         f"Description: {description}\n\n"
         f"The prompt should be concise (under 50 words), and simple too"
+        f"also dont user something like this  Create a workflow named` Extract and process information directly from PDF using Claude and Gemini` like dont give name"
+        f"Use direct commands like 'Create a' or 'Build a' instead of questions"
     )
     
     response = openai_client.chat.completions.create(
@@ -44,6 +46,10 @@ def main():
             
             # Generate user prompt using OpenAI API
             user_prompt = generate_prompt(name, description)
+            
+            # Remove surrounding quotes if present
+            if user_prompt.startswith('"') and user_prompt.endswith('"'):
+                user_prompt = user_prompt[1:-1]
             
             # Prepare JSONL entry
             training_entry = {
