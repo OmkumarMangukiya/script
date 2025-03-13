@@ -40,7 +40,7 @@ def convert_jsonl_to_json(input_file, output_file):
                     }
                     
                     # Add to the workflows array
-                    workflows.append(workflow_entry)
+                    workflows.append(workflow_entry["workflow"])
         
         # Write the JSON array to the output file
         with open(output_file, 'w', encoding='utf-8') as f:

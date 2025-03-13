@@ -1,63 +1,61 @@
 import json
-import sys
+import openai
+import os
 
-def convert_workflow_to_jsonl(input_file, output_file):
-    """
-    Convert a JSON file containing workflows to JSONL format.
+# Set your OpenAI API Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
+
+openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
+def generate_prompt(name, description):
+    """Uses OpenAI API to generate a natural-sounding prompt based on name and description."""
+    system_message = "You generate user prompts for an AI that builds n8n workflows from natural language."
     
-    Each workflow in the input JSON becomes a JSONL entry with messages for system, user, and assistant.
+    user_message = (
+        f"Given the following workflow details, generate a natural-sounding prompt that a user might give to an AI workflow generator.\n\n"
+        f"Workflow Name: {name}\n"
+        f"Description: {description}\n\n"
+        f"The prompt should be concise (under 50 words), and simple too"
+    )
     
-    Args:
-        input_file (str): Path to the input JSON file
-        output_file (str): Path to the output JSONL file
-    """
-    try:
-        # Read the input JSON file
-        with open(input_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # Open output file for writing
-        with open(output_file, 'w', encoding='utf-8') as f:
-            # Process each workflow entry
-            for workflow_entry in data:
-                # Extract workflow information
-                workflow_json = workflow_entry.get("workflow", {})
-                workflow_prompt = workflow_entry.get("prompt",{})
-                
-                # Create the JSONL entry structure
-                jsonl_entry = {
-                    "messages": [
-                        {
-                            "role": "system", 
-                            "content": "You are an AI assistant that generates n8n workflow JSON configurations based on user prompts. Ensure the workflows are well-structured, executable, and aligned with the user's request."
-                        },
-                        {
-                            "role": "user", 
-                            "content": f"'{workflow_prompt}'"
-                        },
-                        {
-                            "role": "assistant", 
-                            "content": json.dumps(workflow_json)
-                        }
-                    ]
-                }
-                
-                # Write the entry as a line in the JSONL file
-                f.write(json.dumps(jsonl_entry) + '\n')
-        
-        print(f"Successfully converted {len(data)} workflows to JSONL format in {output_file}")
-        
-    except FileNotFoundError:
-        print(f"Error: Input file '{input_file}' not found.")
-    except json.JSONDecodeError:
-        print(f"Error: Input file '{input_file}' contains invalid JSON.")
-    except Exception as e:
-        print(f"Error: {str(e)}")
+    response = openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": system_message},
+                  {"role": "user", "content": user_message}],
+        max_tokens=500,
+        temperature=0.9
+    )
+    
+    return response.choices[0].message.content.strip()
+
+def main():
+    input_filename = "input.json"
+    output_filename = "output.jsonl"
+    
+    # Load workflow data
+    with open(input_filename, "r", encoding="utf-8") as infile:
+        workflows = json.load(infile)
+    
+    with open(output_filename, "a", encoding="utf-8") as outfile:
+        for wf in workflows:
+            name = wf.get("name", "Unnamed Workflow")
+            description = wf.get("description", "")
+            workflow_json = wf.get("workflow", {})
+            
+            # Generate user prompt using OpenAI API
+            user_prompt = generate_prompt(name, description)
+            
+            # Prepare JSONL entry
+            training_entry = {
+                "messages": [
+                    {"role": "system", "content": "You are an AI-powered n8n workflow builder. You generate n8n workflows in JSON format based on user prompts."},
+                    {"role": "user", "content": user_prompt},
+                    {"role": "assistant", "content": json.dumps(workflow_json)}
+                ]
+            }
+            
+            # Write to JSONL file
+            outfile.write(json.dumps(training_entry) + "\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python convert_to_jsonl.py <input_json_file> <output_jsonl_file>")
-    else:
-        input_file = sys.argv[1]
-        output_file = sys.argv[2]
-        convert_workflow_to_jsonl(input_file, output_file)
+    main()
